@@ -1,0 +1,16 @@
+RewriteEngine On
+RewriteRule ^assets/ - [L]
+RewriteRule ^uploads/ - [L]
+RewriteRule ^api/(.*)$ api/$1 [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?page=$1 [QSA,L]
+
+<FilesMatch "\.(sql|md)$">
+    Deny from all
+</FilesMatch>
+
+php_value upload_max_filesize 100M
+php_value post_max_size 100M
+php_value max_execution_time 300
+php_value max_input_time 300

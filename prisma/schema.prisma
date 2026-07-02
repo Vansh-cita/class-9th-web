@@ -1,0 +1,233 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model access_codes {
+  id           Int          @id @default(autoincrement())
+  code         String
+  page_id      Int
+  used_by      Int?
+  is_active    Int?         @default(1)
+  used_at      String?
+  created_at   String?      @default("datetime('now')")
+  users        users?       @relation(fields: [used_by], references: [id], onUpdate: NoAction)
+  hidden_pages hidden_pages @relation(fields: [page_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model announcements {
+  id         Int     @id @default(autoincrement())
+  title      String
+  content    String
+  type       String? @default("general")
+  is_pinned  Int?    @default(0)
+  created_by Int?
+  created_at String? @default("datetime('now')")
+  updated_at String? @default("datetime('now')")
+  users      users?  @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+}
+
+model bookmarks {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  book_id    Int
+  chapter_id Int?
+  page       Int?      @default(1)
+  note       String?
+  created_at String?   @default("datetime('now')")
+  chapters   chapters? @relation(fields: [chapter_id], references: [id], onUpdate: NoAction)
+  books      books     @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, book_id, chapter_id, page], map: "sqlite_autoindex_bookmarks_1")
+}
+
+model books {
+  id               Int                @id @default(autoincrement())
+  title            String
+  slug             String             @unique(map: "sqlite_autoindex_books_1")
+  description      String?
+  subject          String?
+  language         String?            @default("English")
+  category_id      Int?
+  thumbnail        String?            @default("default-book.png")
+  author           String?            @default("NCERT")
+  is_chapter_wise  Int?               @default(0)
+  page_count       Int?               @default(0)
+  created_at       String?            @default("datetime('now')")
+  updated_at       String?            @default("datetime('now')")
+  bookmarks        bookmarks[]
+  categories       categories?        @relation(fields: [category_id], references: [id], onUpdate: NoAction)
+  chapters         chapters[]
+  reading_progress reading_progress[]
+  uploads          uploads[]
+
+  @@index([subject], map: "idx_books_subject")
+  @@index([category_id], map: "idx_books_category")
+}
+
+model categories {
+  id          Int     @id @default(autoincrement())
+  name        String
+  slug        String  @unique(map: "sqlite_autoindex_categories_1")
+  description String?
+  icon        String? @default("book")
+  created_at  String? @default("datetime('now')")
+  books       books[]
+}
+
+model chapters {
+  id               Int                @id @default(autoincrement())
+  book_id          Int
+  title            String
+  chapter_number   Int
+  pdf_file         String?
+  file_path        String?
+  page_number      Int?               @default(0)
+  page_count       Int?               @default(0)
+  content          String?
+  created_at       String?            @default("datetime('now')")
+  bookmarks        bookmarks[]
+  books            books              @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reading_progress reading_progress[]
+
+  @@index([book_id, chapter_number], map: "idx_chapters_num")
+  @@index([book_id], map: "idx_chapters_book")
+}
+
+model hidden_page_items {
+  id           Int          @id @default(autoincrement())
+  page_id      Int
+  item_type    String
+  item_id      Int?
+  title        String
+  description  String?
+  file_path    String?
+  created_at   String?      @default("datetime('now')")
+  hidden_pages hidden_pages @relation(fields: [page_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model hidden_pages {
+  id                Int                 @id @default(autoincrement())
+  title             String
+  slug              String              @unique(map: "sqlite_autoindex_hidden_pages_1")
+  description       String?
+  content           String?
+  access_code       String
+  is_active         Int?                @default(0)
+  created_by        Int?
+  created_at        String?             @default("datetime('now')")
+  updated_at        String?             @default("datetime('now')")
+  access_codes      access_codes[]
+  hidden_page_items hidden_page_items[]
+  users             users?              @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  user_access       user_access[]
+}
+
+model logs {
+  id         Int     @id @default(autoincrement())
+  user_id    Int?
+  action     String
+  details    String?
+  ip_address String?
+  user_agent String?
+  created_at String? @default("datetime('now')")
+  users      users?  @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_logs_created")
+  @@index([action], map: "idx_logs_action")
+  @@index([user_id], map: "idx_logs_user")
+}
+
+model notifications {
+  id         Int     @id @default(autoincrement())
+  user_id    Int
+  title      String
+  message    String?
+  type       String? @default("info")
+  is_read    Int?    @default(0)
+  created_at String? @default("datetime('now')")
+  users      users   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, is_read], map: "idx_notifications_user_read")
+}
+
+model reading_progress {
+  id               Int       @id @default(autoincrement())
+  user_id          Int
+  book_id          Int
+  chapter_id       Int?
+  last_page        Int?      @default(1)
+  total_pages      Int?      @default(0)
+  progress_percent Float?    @default(0.00)
+  last_read_at     String?   @default("datetime('now')")
+  chapters         chapters? @relation(fields: [chapter_id], references: [id], onUpdate: NoAction)
+  books            books     @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users            users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, book_id], map: "sqlite_autoindex_reading_progress_1")
+}
+
+model settings {
+  id            Int     @id @default(autoincrement())
+  setting_key   String  @unique(map: "sqlite_autoindex_settings_1")
+  setting_value String?
+  updated_at    String? @default("datetime('now')")
+}
+
+model uploads {
+  id            Int     @id @default(autoincrement())
+  user_id       Int
+  book_id       Int?
+  filename      String
+  original_name String?
+  file_path     String
+  file_type     String
+  file_size     Int?    @default(0)
+  created_at    String? @default("datetime('now')")
+  books         books?  @relation(fields: [book_id], references: [id], onUpdate: NoAction)
+  users         users   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model user_access {
+  id           Int          @id @default(autoincrement())
+  user_id      Int
+  page_id      Int
+  granted_at   String?      @default("datetime('now')")
+  hidden_pages hidden_pages @relation(fields: [page_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users        users        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, page_id], map: "sqlite_autoindex_user_access_1")
+}
+
+model users {
+  id                Int                @id @default(autoincrement())
+  username          String             @unique(map: "sqlite_autoindex_users_1")
+  password          String
+  role_number       String
+  school_name       String
+  user_id           String?            @unique(map: "sqlite_autoindex_users_2")
+  role              String?            @default("student")
+  avatar            String?            @default("default.png")
+  theme             String?            @default("dark")
+  reading_font      String?            @default("Outfit")
+  reading_font_size Int?               @default(18)
+  created_at        String?            @default("datetime('now')")
+  updated_at        String?            @default("datetime('now')")
+  access_codes      access_codes[]
+  announcements     announcements[]
+  bookmarks         bookmarks[]
+  hidden_pages      hidden_pages[]
+  logs              logs[]
+  notifications     notifications[]
+  reading_progress  reading_progress[]
+  uploads           uploads[]
+  user_access       user_access[]
+
+  @@index([role], map: "idx_users_role")
+  @@index([user_id], map: "idx_users_user_id")
+}
