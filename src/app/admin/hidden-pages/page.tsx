@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import ThemeDropdown from '@/components/ThemeDropdown'
 
 interface HiddenPageItem {
   id: number
@@ -15,9 +16,10 @@ interface HiddenPageItem {
 interface AccessCodeEntry {
   id: number
   code: string
-  is_active: number | null
+  is_active: boolean | null
   used_by: number | null
 }
+
 
 interface HiddenPageData {
   id: number
@@ -26,7 +28,7 @@ interface HiddenPageData {
   description: string | null
   content: string | null
   access_code: string
-  is_active: number | null
+  is_active: boolean | null
   created_at: string | null
   access_codes: AccessCodeEntry[]
   hidden_page_items: HiddenPageItem[]
@@ -36,28 +38,39 @@ interface HiddenPageData {
 export default function AdminHiddenPages() {
   const router = useRouter()
   const [pages, setPages] = useState<HiddenPageData[]>([])
+  const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [showCreate, setShowCreate] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     title: '', description: '', content: '', access_code: '', is_active: true,
     items: [{ item_type: 'note' as string, title: '', description: '', file_path: '' }],
   })
 
   const fetchPages = async () => {
-    const res = await fetch('/api/admin/hidden-pages')
-    const d = await res.json()
-    if (d.pages) setPages(d.pages)
+    try {
+      const res = await fetch('/api/admin/hidden-pages')
+      const d = await res.json()
+      if (d.pages) setPages(d.pages)
+    } catch {
+      // Silently fail
+    }
+    setLoading(false)
   }
 
   useEffect(() => { fetchPages() }, [])
 
   const togglePage = async (page: HiddenPageData) => {
-    await fetch(`/api/admin/hidden-pages/${page.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ is_active: !page.is_active }),
-    })
-    fetchPages(); router.refresh()
+    try {
+      await fetch(`/api/admin/hidden-pages/${page.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !page.is_active }),
+      })
+      fetchPages(); router.refresh()
+    } catch {
+      // Silently fail
+    }
   }
 
   const addItem = () => setForm(prev => ({
@@ -78,27 +91,45 @@ export default function AdminHiddenPages() {
 
   const createPage = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch('/api/admin/hidden-pages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-    const d = await res.json()
-    if (d.page) {
-      setShowCreate(false)
-      setForm({ title: '', description: '', content: '', access_code: '', is_active: true, items: [{ item_type: 'note', title: '', description: '', file_path: '' }] })
-      fetchPages(); router.refresh()
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/admin/hidden-pages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const d = await res.json()
+      if (d.page) {
+        setShowCreate(false)
+        setForm({ title: '', description: '', content: '', access_code: '', is_active: true, items: [{ item_type: 'note', title: '', description: '', file_path: '' }] })
+        fetchPages(); router.refresh()
+      }
+    } catch {
+      /* ignore */
     }
+    setSubmitting(false)
   }
 
   const deletePage = async (id: number) => {
     if (!confirm('Delete this hidden page permanently?')) return
-    await fetch(`/api/admin/hidden-pages/${id}`, { method: 'DELETE' })
-    fetchPages(); router.refresh()
+    try {
+      await fetch(`/api/admin/hidden-pages/${id}`, { method: 'DELETE' })
+      fetchPages(); router.refresh()
+    } catch {
+      /* ignore */
+    }
   }
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } }
   const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-2 border-[#FF0F7B] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
@@ -161,12 +192,16 @@ export default function AdminHiddenPages() {
                   <div key={idx} className="flex gap-3 items-start bg-white/5 rounded-xl p-3">
                     <div className="flex-1 space-y-2">
                       <div className="flex gap-2">
-                        <select value={item.item_type} onChange={e => updateItem(idx, 'item_type', e.target.value)}
-                          className="bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:border-[#FF0F7B] focus:outline-none">
-                          <option value="note">Note</option>
-                          <option value="book">Book</option>
-                          <option value="assignment">Assignment</option>
-                        </select>
+                        <ThemeDropdown
+                          options={[
+                            { value: 'note', label: 'Note' },
+                            { value: 'book', label: 'Book' },
+                            { value: 'assignment', label: 'Assignment' },
+                          ]}
+                          value={item.item_type}
+                          onChange={v => updateItem(idx, 'item_type', v)}
+                          className="!w-[100px]"
+                        />
                         <input value={item.title} onChange={e => updateItem(idx, 'title', e.target.value)}
                           className="flex-1 bg-transparent border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none"
                           placeholder="Item title" />
@@ -182,7 +217,14 @@ export default function AdminHiddenPages() {
               </div>
             </div>
 
-            <button type="submit" className="btn-primary !py-2.5 !text-sm">Create Hidden Page</button>
+            <button type="submit" disabled={submitting} className="btn-primary !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              {submitting ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Creating...
+                </span>
+              ) : 'Create Hidden Page'}
+            </button>
           </form>
         </motion.div>
       )}
@@ -269,12 +311,16 @@ function EditHiddenPageForm({ page, onSave }: { page: HiddenPageData; onSave: ()
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
-    await fetch(`/api/admin/hidden-pages/${page.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-    onSave(); router.refresh()
+    try {
+      await fetch(`/api/admin/hidden-pages/${page.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      onSave(); router.refresh()
+    } catch {
+      // Silently fail
+    }
   }
 
   return (

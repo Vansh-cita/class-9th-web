@@ -49,7 +49,7 @@ interface NotificationData {
   title: string
   message: string | null
   type: string | null
-  is_read: number | null
+  is_read: boolean | null
   created_at: string | null
 }
 
@@ -102,7 +102,7 @@ export default function DashboardPage() {
     setData(prev => prev ? {
       ...prev,
       notifications: prev.notifications.map(n =>
-        n.id === id ? { ...n, is_read: 1 } : n
+        n.id === id ? { ...n, is_read: true } : n
       ),
     } : prev)
   }
@@ -115,7 +115,7 @@ export default function DashboardPage() {
     })
     setData(prev => prev ? {
       ...prev,
-      notifications: prev.notifications.map(n => ({ ...n, is_read: 1 })),
+      notifications: prev.notifications.map(n => ({ ...n, is_read: true })),
     } : prev)
   }
 

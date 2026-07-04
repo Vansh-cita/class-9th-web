@@ -38,14 +38,18 @@ export async function POST(req: Request) {
       },
     })
 
-    await prisma.logs.create({
-      data: {
-        user_id: user.id,
-        action: 'register',
-        details: 'New user registered',
-        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
-      },
-    })
+    try {
+      await prisma.logs.create({
+        data: {
+          user_id: user.id,
+          action: 'register',
+          details: 'New user registered',
+          ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+        },
+      })
+    } catch {
+      // Non-blocking audit log failure
+    }
 
     return NextResponse.json({
       success: true,

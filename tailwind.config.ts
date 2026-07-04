@@ -82,6 +82,10 @@ const config: Config = {
           from: { opacity: "0", transform: "scale(0.95) translateY(10px)" },
           to: { opacity: "1", transform: "scale(1) translateY(0)" },
         },
+        "spin-slow": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
       },
       animation: {
         float: "float 18s ease-in-out infinite",
@@ -90,6 +94,7 @@ const config: Config = {
         "toast-in": "toast-in 0.35s ease forwards",
         "toast-out": "toast-out 0.30s ease forwards",
         "modal-in": "modal-in 0.30s ease forwards",
+        "spin-slow": "spin-slow 3s linear infinite",
       },
     },
   },

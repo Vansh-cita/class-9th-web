@@ -1,5 +1,7 @@
 node_modules
 .next
 *.db
+database/
+.env
 .env.local
 .env.production

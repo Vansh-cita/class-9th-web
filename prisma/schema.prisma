@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -12,23 +12,23 @@ model access_codes {
   code         String
   page_id      Int
   used_by      Int?
-  is_active    Int?         @default(1)
-  used_at      String?
-  created_at   String?      @default("datetime('now')")
+  is_active    Boolean      @default(true)
+  used_at      DateTime?
+  created_at   DateTime     @default(now())
   users        users?       @relation(fields: [used_by], references: [id], onUpdate: NoAction)
   hidden_pages hidden_pages @relation(fields: [page_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model announcements {
-  id         Int     @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   title      String
   content    String
-  type       String? @default("general")
-  is_pinned  Int?    @default(0)
+  type       String?  @default("general")
+  is_pinned  Boolean  @default(false)
   created_by Int?
-  created_at String? @default("datetime('now')")
-  updated_at String? @default("datetime('now')")
-  users      users?  @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  users      users?   @relation(fields: [created_by], references: [id], onUpdate: NoAction)
 }
 
 model bookmarks {
@@ -38,45 +38,45 @@ model bookmarks {
   chapter_id Int?
   page       Int?      @default(1)
   note       String?
-  created_at String?   @default("datetime('now')")
+  created_at DateTime  @default(now())
   chapters   chapters? @relation(fields: [chapter_id], references: [id], onUpdate: NoAction)
   books      books     @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([user_id, book_id, chapter_id, page], map: "sqlite_autoindex_bookmarks_1")
+  @@unique([user_id, book_id, chapter_id, page])
 }
 
 model books {
   id               Int                @id @default(autoincrement())
   title            String
-  slug             String             @unique(map: "sqlite_autoindex_books_1")
+  slug             String             @unique
   description      String?
   subject          String?
   language         String?            @default("English")
   category_id      Int?
   thumbnail        String?            @default("default-book.png")
   author           String?            @default("NCERT")
-  is_chapter_wise  Int?               @default(0)
+  is_chapter_wise  Boolean            @default(false)
   page_count       Int?               @default(0)
-  created_at       String?            @default("datetime('now')")
-  updated_at       String?            @default("datetime('now')")
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @default(now())
   bookmarks        bookmarks[]
   categories       categories?        @relation(fields: [category_id], references: [id], onUpdate: NoAction)
   chapters         chapters[]
   reading_progress reading_progress[]
   uploads          uploads[]
 
-  @@index([subject], map: "idx_books_subject")
-  @@index([category_id], map: "idx_books_category")
+  @@index([subject])
+  @@index([category_id])
 }
 
 model categories {
   id          Int     @id @default(autoincrement())
   name        String
-  slug        String  @unique(map: "sqlite_autoindex_categories_1")
+  slug        String  @unique
   description String?
   icon        String? @default("book")
-  created_at  String? @default("datetime('now')")
+  created_at  DateTime @default(now())
   books       books[]
 }
 
@@ -90,13 +90,13 @@ model chapters {
   page_number      Int?               @default(0)
   page_count       Int?               @default(0)
   content          String?
-  created_at       String?            @default("datetime('now')")
+  created_at       DateTime           @default(now())
   bookmarks        bookmarks[]
   books            books              @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   reading_progress reading_progress[]
 
-  @@index([book_id, chapter_number], map: "idx_chapters_num")
-  @@index([book_id], map: "idx_chapters_book")
+  @@unique([book_id, chapter_number])
+  @@index([book_id])
 }
 
 model hidden_page_items {
@@ -107,21 +107,21 @@ model hidden_page_items {
   title        String
   description  String?
   file_path    String?
-  created_at   String?      @default("datetime('now')")
+  created_at   DateTime     @default(now())
   hidden_pages hidden_pages @relation(fields: [page_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model hidden_pages {
   id                Int                 @id @default(autoincrement())
   title             String
-  slug              String              @unique(map: "sqlite_autoindex_hidden_pages_1")
+  slug              String              @unique
   description       String?
   content           String?
   access_code       String
-  is_active         Int?                @default(0)
+  is_active         Boolean             @default(false)
   created_by        Int?
-  created_at        String?             @default("datetime('now')")
-  updated_at        String?             @default("datetime('now')")
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @default(now())
   access_codes      access_codes[]
   hidden_page_items hidden_page_items[]
   users             users?              @relation(fields: [created_by], references: [id], onUpdate: NoAction)
@@ -129,31 +129,31 @@ model hidden_pages {
 }
 
 model logs {
-  id         Int     @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   user_id    Int?
   action     String
   details    String?
   ip_address String?
   user_agent String?
-  created_at String? @default("datetime('now')")
-  users      users?  @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+  created_at DateTime @default(now())
+  users      users?   @relation(fields: [user_id], references: [id], onUpdate: NoAction)
 
-  @@index([created_at], map: "idx_logs_created")
-  @@index([action], map: "idx_logs_action")
-  @@index([user_id], map: "idx_logs_user")
+  @@index([created_at])
+  @@index([action])
+  @@index([user_id])
 }
 
 model notifications {
-  id         Int     @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   user_id    Int
   title      String
   message    String?
-  type       String? @default("info")
-  is_read    Int?    @default(0)
-  created_at String? @default("datetime('now')")
-  users      users   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  type       String?  @default("info")
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([user_id, is_read], map: "idx_notifications_user_read")
+  @@index([user_id, is_read])
 }
 
 model reading_progress {
@@ -164,19 +164,31 @@ model reading_progress {
   last_page        Int?      @default(1)
   total_pages      Int?      @default(0)
   progress_percent Float?    @default(0.00)
-  last_read_at     String?   @default("datetime('now')")
+  last_read_at     DateTime  @default(now())
   chapters         chapters? @relation(fields: [chapter_id], references: [id], onUpdate: NoAction)
   books            books     @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users            users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([user_id, book_id], map: "sqlite_autoindex_reading_progress_1")
+  @@unique([user_id, book_id])
 }
 
 model settings {
-  id            Int     @id @default(autoincrement())
-  setting_key   String  @unique(map: "sqlite_autoindex_settings_1")
+  id            Int      @id @default(autoincrement())
+  setting_key   String   @unique
   setting_value String?
-  updated_at    String? @default("datetime('now')")
+  updated_at    DateTime @default(now())
+}
+
+model feedback {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  rating     Int
+  message    String
+  created_at DateTime @default(now())
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id])
+  @@index([rating])
 }
 
 model uploads {
@@ -188,7 +200,7 @@ model uploads {
   file_path     String
   file_type     String
   file_size     Int?    @default(0)
-  created_at    String? @default("datetime('now')")
+  created_at    DateTime @default(now())
   books         books?  @relation(fields: [book_id], references: [id], onUpdate: NoAction)
   users         users   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
@@ -197,30 +209,31 @@ model user_access {
   id           Int          @id @default(autoincrement())
   user_id      Int
   page_id      Int
-  granted_at   String?      @default("datetime('now')")
+  granted_at   DateTime     @default(now())
   hidden_pages hidden_pages @relation(fields: [page_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users        users        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([user_id, page_id], map: "sqlite_autoindex_user_access_1")
+  @@unique([user_id, page_id])
 }
 
 model users {
   id                Int                @id @default(autoincrement())
-  username          String             @unique(map: "sqlite_autoindex_users_1")
+  username          String             @unique
   password          String
   role_number       String
   school_name       String
-  user_id           String?            @unique(map: "sqlite_autoindex_users_2")
+  user_id           String?            @unique
   role              String?            @default("student")
   avatar            String?            @default("default.png")
   theme             String?            @default("dark")
   reading_font      String?            @default("Outfit")
   reading_font_size Int?               @default(18)
-  created_at        String?            @default("datetime('now')")
-  updated_at        String?            @default("datetime('now')")
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @default(now())
   access_codes      access_codes[]
   announcements     announcements[]
   bookmarks         bookmarks[]
+  feedback          feedback[]
   hidden_pages      hidden_pages[]
   logs              logs[]
   notifications     notifications[]
@@ -228,6 +241,27 @@ model users {
   uploads           uploads[]
   user_access       user_access[]
 
-  @@index([role], map: "idx_users_role")
-  @@index([user_id], map: "idx_users_user_id")
+  @@index([role])
+  @@index([user_id])
+}
+
+model homepage_config {
+  id               Int    @id @default(autoincrement())
+  badge_text       String @default("CBSE Class 9 Learning Portal")
+  hero_title_line1 String @default("Learn Smarter,")
+  hero_title_line2 String @default("Study Better")
+  hero_subheading  String @default("Access NCERT textbooks, track your reading progress, and stay updated with the latest announcements — all in one place.")
+  featured_title   String @default("Featured Books")
+  why_title        String @default("Why Use This Portal?")
+  card1_title      String @default("Free Access")
+  card1_desc       String @default("All NCERT textbooks available at no cost, anytime.")
+  card1_icon       String @default("📚")
+  card2_title      String @default("Track Progress")
+  card2_desc       String @default("Bookmark pages and track your reading across all books.")
+  card2_icon       String @default("📊")
+  card3_title      String @default("Stay Updated")
+  card3_desc       String @default("Get announcements and notifications from your school.")
+  card3_icon       String @default("🔔")
+  footer_text      String @default("© 2026 Vansh. All Rights Reserved.\nAll NCERT books and related content belong to their respective copyright owners.\n~Powered by Vansh")
+  updated_at       DateTime @default(now())
 }

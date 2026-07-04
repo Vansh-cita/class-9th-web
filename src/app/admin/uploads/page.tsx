@@ -22,9 +22,13 @@ export default function AdminUploadsPage() {
   const [loading, setLoading] = useState(true)
 
   const fetchAll = useCallback(async () => {
-    const res = await fetch('/api/admin/uploads')
-    const d = await res.json()
-    if (d.uploads) setUploads(d.uploads)
+    try {
+      const res = await fetch('/api/admin/uploads')
+      const d = await res.json()
+      if (d.uploads) setUploads(d.uploads)
+    } catch {
+      // Silently fail uploads load
+    }
     setLoading(false)
   }, [])
 

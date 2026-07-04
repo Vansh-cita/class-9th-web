@@ -6,14 +6,17 @@ export const dynamic = 'force-dynamic'
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
-    const limit = parseInt(searchParams.get('limit') || '50')
+    const limit = Math.max(1, parseInt(searchParams.get('limit') || '50') || 50)
     const subject = searchParams.get('subject')
     const category = searchParams.get('category')
     const search = searchParams.get('search')
 
     const where: Record<string, unknown> = {}
     if (subject) where.subject = subject
-    if (category) where.category_id = parseInt(category)
+    if (category) {
+      const catId = parseInt(category)
+      if (!isNaN(catId)) where.category_id = catId
+    }
     if (search) {
       where.OR = [
         { title: { contains: search } },

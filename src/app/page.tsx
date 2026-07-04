@@ -14,16 +14,28 @@ interface BookData {
   categories: { id: number; name: string; slug: string } | null
 }
 
-interface CategoryData {
-  id: number
-  name: string
-  slug: string
+interface HomepageConfig {
+  badge_text: string
+  hero_title_line1: string
+  hero_title_line2: string
+  hero_subheading: string
+  featured_title: string
+  why_title: string
+  card1_title: string
+  card1_desc: string
+  card1_icon: string
+  card2_title: string
+  card2_desc: string
+  card2_icon: string
+  card3_title: string
+  card3_desc: string
+  card3_icon: string
 }
 
 export default function Home() {
   const [featuredBooks, setFeaturedBooks] = useState<BookData[]>([])
-  const [categories, setCategories] = useState<CategoryData[]>([])
   const [user, setUser] = useState<{ username: string; role: string } | null>(null)
+  const [config, setConfig] = useState<HomepageConfig | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -32,14 +44,14 @@ export default function Home() {
       .then(d => { if (d.books) setFeaturedBooks(d.books) })
       .catch(() => {})
 
-    fetch('/api/categories')
-      .then(r => r.json())
-      .then(d => { if (d.categories) setCategories(d.categories) })
-      .catch(() => {})
-
     fetch('/api/auth/me')
       .then(r => r.json())
       .then(d => { if (d.user) setUser(d.user) })
+      .catch(() => {})
+
+    fetch('/api/homepage')
+      .then(r => r.json())
+      .then(d => { if (d.config) setConfig(d.config) })
       .catch(() => {})
   }, [])
 
@@ -56,29 +68,45 @@ export default function Home() {
     show: { opacity: 1, y: 0 },
   }
 
-  return (
-    <div className="min-h-screen">
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#FF0F7B]/5 via-transparent to-[#050505] pointer-events-none" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#FF0F7B]/10 rounded-full blur-[120px] pointer-events-none" />
+  const promoDefaults = [
+    { title: 'Free Access', desc: 'All NCERT textbooks available at no cost, anytime.', icon: '📚' },
+    { title: 'Track Progress', desc: 'Bookmark pages and track your reading across all books.', icon: '📊' },
+    { title: 'Stay Updated', desc: 'Get announcements and notifications from your school.', icon: '🔔' },
+  ]
 
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+  const promos = config
+    ? [
+        { title: config.card1_title, desc: config.card1_desc, icon: config.card1_icon },
+        { title: config.card2_title, desc: config.card2_desc, icon: config.card2_icon },
+        { title: config.card3_title, desc: config.card3_desc, icon: config.card3_icon },
+      ]
+    : promoDefaults
+
+  return (
+    <div className="relative min-h-screen w-full bg-neutral-950">
+      {/* Full-page background gradient and glow — stretches edge to edge */}
+      <div className="absolute inset-0 w-full h-full min-h-full bg-gradient-to-b from-[#FF0F7B]/5 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#FF0F7B]/8 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] bg-[#9D4EDD]/8 rounded-full blur-[120px] pointer-events-none" />
+
+      <section className="relative z-10 min-h-[90vh] flex items-center justify-center pt-24">
+
+        <div className="text-center px-4 max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
             <span className="inline-block px-4 py-1.5 rounded-full text-xs font-medium bg-[#FF0F7B]/10 text-[#FF0F7B] border border-[#FF0F7B]/20 mb-6">
-              CBSE Class 9 Learning Portal
+              {config?.badge_text || 'CBSE Class 9 Learning Portal'}
             </span>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-              Learn Smarter,
+              {config?.hero_title_line1 || 'Learn Smarter,'}
               <br />
-              <span className="neon-text">Study Better</span>
+              <span className="neon-text">{config?.hero_title_line2 || 'Study Better'}</span>
             </h1>
             <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Access NCERT textbooks, track your reading progress, and stay updated
-              with the latest announcements — all in one place.
+              {config?.hero_subheading || 'Access NCERT textbooks, track your reading progress, and stay updated with the latest announcements — all in one place.'}
             </p>
             <div className="flex items-center justify-center gap-4 flex-wrap">
               {user ? (
@@ -114,7 +142,7 @@ export default function Home() {
       </section>
 
       {featuredBooks.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
           <motion.div
             variants={container}
             initial="hidden"
@@ -122,7 +150,7 @@ export default function Home() {
             viewport={{ once: true }}
           >
             <div className="flex items-center justify-between mb-10">
-              <h2 className="text-3xl font-bold">Featured Books</h2>
+              <h2 className="text-3xl font-bold">{config?.featured_title || 'Featured Books'}</h2>
               <Link href="/books" className="text-[#FF0F7B] text-sm hover:underline">
                 View All &rarr;
               </Link>
@@ -154,20 +182,16 @@ export default function Home() {
         </section>
       )}
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-3xl font-bold mb-10 text-center">Why Use This Portal?</h2>
+          <h2 className="text-3xl font-bold mb-10 text-center">{config?.why_title || 'Why Use This Portal?'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { title: 'Free Access', desc: 'All NCERT textbooks available at no cost, anytime.', icon: '📚' },
-              { title: 'Track Progress', desc: 'Bookmark pages and track your reading across all books.', icon: '📊' },
-              { title: 'Stay Updated', desc: 'Get announcements and notifications from your school.', icon: '🔔' },
-            ].map((feature, i) => (
+            {promos.map((feature, i) => (
               <motion.div
                 key={i}
                 className="glass-card p-8 text-center"

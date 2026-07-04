@@ -18,15 +18,19 @@ export async function POST(req: Request) {
 
     // Virtual admin (bypass login) uses id=-1; skip DB log for that case
     if (user.id !== -1) {
-      await prisma.logs.create({
-        data: {
-          user_id: user.id,
-          action: 'login',
-          details: 'User logged in',
-          ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
-          user_agent: req.headers.get('user-agent') || undefined,
-        },
-      })
+      try {
+        await prisma.logs.create({
+          data: {
+            user_id: user.id,
+            action: 'login',
+            details: 'User logged in',
+            ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
+            user_agent: req.headers.get('user-agent') || undefined,
+          },
+        })
+      } catch {
+        // Non-blocking audit log failure
+      }
     }
 
     const isAdmin = user.role === 'admin'

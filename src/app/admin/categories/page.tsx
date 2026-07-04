@@ -18,13 +18,18 @@ export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [formMsg, setFormMsg] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [form, setForm] = useState({ name: '', slug: '', description: '' })
 
   const fetchAll = useCallback(async () => {
-    const res = await fetch('/api/admin/categories')
-    const d = await res.json()
-    if (d.categories) setCategories(d.categories)
+    try {
+      const res = await fetch('/api/admin/categories')
+      const d = await res.json()
+      if (d.categories) setCategories(d.categories)
+    } catch {
+      setFormMsg('Failed to load categories')
+    }
     setLoading(false)
   }, [])
 
@@ -33,40 +38,49 @@ export default function AdminCategoriesPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setFormMsg('')
+    setSubmitting(true)
+    try {
+      if (editingId) {
+        const res = await fetch(`/api/admin/categories/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        })
+        const d = await res.json()
+        if (!res.ok) { setFormMsg(d.error || 'Error'); return }
+        setFormMsg('Category updated!')
+      } else {
+        const res = await fetch('/api/admin/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        })
+        const d = await res.json()
+        if (!res.ok) { setFormMsg(d.error || 'Error'); return }
+        setFormMsg('Category created!')
+      }
 
-    if (editingId) {
-      const res = await fetch(`/api/admin/categories/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-      const d = await res.json()
-      if (!res.ok) { setFormMsg(d.error || 'Error'); return }
-      setFormMsg('Category updated!')
-    } else {
-      const res = await fetch('/api/admin/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-      const d = await res.json()
-      if (!res.ok) { setFormMsg(d.error || 'Error'); return }
-      setFormMsg('Category created!')
+      setForm({ name: '', slug: '', description: '' })
+      setEditingId(null)
+      fetchAll()
+      router.refresh()
+    } catch {
+      setFormMsg('Network error')
     }
-
-    setForm({ name: '', slug: '', description: '' })
-    setEditingId(null)
-    fetchAll()
-    router.refresh()
+    setSubmitting(false)
   }
 
   async function deleteCategory(id: number) {
     if (!confirm('Delete this category permanently? Books in this category will be uncategorized.')) return
-    const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' })
-    const d = await res.json()
-    setFormMsg(d.success ? 'Category deleted!' : d.error || 'Error')
-    fetchAll()
-    router.refresh()
+    try {
+      const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' })
+      const d = await res.json()
+      setFormMsg(d.success ? 'Category deleted!' : d.error || 'Error')
+      fetchAll()
+      router.refresh()
+    } catch {
+      setFormMsg('Network error')
+    }
   }
 
   function startEdit(cat: Category) {
@@ -120,9 +134,14 @@ export default function AdminCategoriesPage() {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#FF0F7B] focus:outline-none" />
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="btn-primary !py-2.5 !text-sm">
-              {editingId ? 'Update' : 'Create'}
-            </button>
+            <button type="submit" disabled={submitting} className="btn-primary !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                {submitting ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    {editingId ? 'Updating...' : 'Creating...'}
+                  </span>
+                ) : (editingId ? 'Update' : 'Create')}
+              </button>
             {editingId && (
               <button type="button" onClick={() => { setEditingId(null); setForm({ name: '', slug: '', description: '' }) }}
                 className="btn-outline !py-2.5 !text-sm">

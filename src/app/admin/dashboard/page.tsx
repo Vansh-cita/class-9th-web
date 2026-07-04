@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
+import { SkeletonStatsGrid, SkeletonLogItem, SkeletonAnnouncementItem } from '@/components/Skeleton'
 
 interface AdminStats {
   totalUsers: number
@@ -27,7 +28,7 @@ interface AnnouncementEntry {
   title: string
   content: string
   type: string | null
-  is_pinned: number | null
+  is_pinned: boolean | null
   created_at: string | null
   users: { username: string } | null
 }
@@ -36,19 +37,25 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [announcements, setAnnouncements] = useState<AnnouncementEntry[]>([])
+  const [loading, setLoading] = useState(true)
 
   const fetchAll = useCallback(async () => {
-    const [statsRes, logsRes, annRes] = await Promise.all([
-      fetch('/api/admin/stats'),
-      fetch('/api/admin/logs?limit=10'),
-      fetch('/api/admin/announcements'),
-    ])
-    const sd = await statsRes.json()
-    if (sd.stats) setStats(sd.stats)
-    const ld = await logsRes.json()
-    if (ld.logs) setLogs(ld.logs)
-    const ad = await annRes.json()
-    if (ad.announcements) setAnnouncements(ad.announcements)
+    try {
+      const [statsRes, logsRes, annRes] = await Promise.all([
+        fetch('/api/admin/stats'),
+        fetch('/api/admin/logs?limit=10'),
+        fetch('/api/admin/announcements'),
+      ])
+      const sd = await statsRes.json()
+      if (sd.stats) setStats(sd.stats)
+      const ld = await logsRes.json()
+      if (ld.logs) setLogs(ld.logs)
+      const ad = await annRes.json()
+      if (ad.announcements) setAnnouncements(ad.announcements)
+    } catch {
+      // Silently fail dashboard load
+    }
+    setLoading(false)
   }, [])
 
   useEffect(() => { fetchAll() }, [fetchAll])
@@ -74,48 +81,64 @@ export default function AdminDashboardPage() {
         <p className="text-gray-400 text-sm mt-1">Full control over the learning portal</p>
       </motion.div>
 
-      <motion.div variants={item} className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        {statCards.map(s => (
-          <div key={s.label} className="glass-card p-5">
-            <p className="text-xs text-gray-500 mb-1">{s.label}</p>
-            <p className={`text-3xl font-bold bg-gradient-to-r ${s.color} bg-clip-text text-transparent`}>
-              {s.value}
-            </p>
-          </div>
-        ))}
-      </motion.div>
+      {loading ? (
+        <SkeletonStatsGrid />
+      ) : (
+        <motion.div variants={item} className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          {statCards.map(s => (
+            <div key={s.label} className="glass-card p-5">
+              <p className="text-xs text-gray-500 mb-1">{s.label}</p>
+              <p className={`text-3xl font-bold bg-gradient-to-r ${s.color} bg-clip-text text-transparent`}>
+                {s.value}
+              </p>
+            </div>
+          ))}
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <motion.div variants={item} className="glass-card p-6">
           <h3 className="font-semibold mb-4">Recent Logs</h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {logs.map(log => (
-              <div key={log.id} className="flex items-start gap-3 py-2 border-b border-white/5 last:border-0">
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-400 uppercase shrink-0 mt-0.5">
-                  {log.action}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-300 truncate">{log.details || log.action}</p>
-                  <p className="text-[10px] text-gray-600">{log.users?.username || 'system'} &middot; {log.created_at}</p>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => <SkeletonLogItem key={i} />)
+            ) : logs.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-6">No recent activity.</p>
+            ) : (
+              logs.map(log => (
+                <div key={log.id} className="flex items-start gap-3 py-2 border-b border-white/5 last:border-0">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-400 uppercase shrink-0 mt-0.5">
+                    {log.action}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-300 truncate">{log.details || log.action}</p>
+                    <p className="text-[10px] text-gray-600">{log.users?.username || 'system'} &middot; {log.created_at}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </motion.div>
 
         <motion.div variants={item} className="glass-card p-6">
           <h3 className="font-semibold mb-4">Recent Announcements</h3>
           <div className="space-y-3 max-h-64 overflow-y-auto">
-            {announcements.map(a => (
-              <div key={a.id} className="p-3 rounded-xl bg-white/5">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium">{a.title}</span>
-                  {a.is_pinned ? <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FF0F7B]/20 text-[#FF0F7B]">PINNED</span> : null}
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => <SkeletonAnnouncementItem key={i} />)
+            ) : announcements.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-6">No announcements yet.</p>
+            ) : (
+              announcements.map(a => (
+                <div key={a.id} className="p-3 rounded-xl bg-white/5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-medium">{a.title}</span>
+                    {a.is_pinned ? <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FF0F7B]/20 text-[#FF0F7B]">PINNED</span> : null}
+                  </div>
+                  <p className="text-xs text-gray-400 line-clamp-2">{a.content}</p>
+                  <p className="text-[10px] text-gray-600 mt-1">{a.users?.username} &middot; {a.created_at}</p>
                 </div>
-                <p className="text-xs text-gray-400 line-clamp-2">{a.content}</p>
-                <p className="text-[10px] text-gray-600 mt-1">{a.users?.username} &middot; {a.created_at}</p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </motion.div>
       </div>

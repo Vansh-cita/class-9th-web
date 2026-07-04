@@ -28,9 +28,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${outfit.variable} ${inter.variable}`}>
-      <body className="min-h-screen">
+      <body className="min-h-screen w-full flex flex-col bg-neutral-950">
         <Navbar />
-        <main className="pt-20 min-h-[calc(100vh-5rem)]">
+        <main className="flex-1 flex flex-col">
           {children}
         </main>
         <Footer />

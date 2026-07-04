@@ -19,9 +19,13 @@ export default function AdminLogsPage() {
   const [loading, setLoading] = useState(true)
 
   const fetchAll = useCallback(async () => {
-    const res = await fetch('/api/admin/logs?limit=100')
-    const d = await res.json()
-    if (d.logs) setLogs(d.logs)
+    try {
+      const res = await fetch('/api/admin/logs?limit=100')
+      const d = await res.json()
+      if (d.logs) setLogs(d.logs)
+    } catch {
+      // Silently fail logs load
+    }
     setLoading(false)
   }, [])
 
