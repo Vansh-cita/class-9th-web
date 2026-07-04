@@ -46,6 +46,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Title and slug are required' }, { status: 400 })
     }
 
+    // Ensure slug is unique by appending a suffix if it already exists
+    let finalSlug = slug
+    const existing = await prisma.books.findUnique({ where: { slug: finalSlug } })
+    if (existing) {
+      finalSlug = `${slug}-${Date.now().toString(36)}`
+    }
+
     let thumbnailPath = 'default-book.png'
     if (file && file.size > 0) {
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
@@ -58,7 +65,7 @@ export async function POST(req: NextRequest) {
     const book = await prisma.books.create({
       data: {
         title,
-        slug,
+        slug: finalSlug,
         description,
         subject,
         language: language || 'English',
@@ -88,7 +95,8 @@ export async function POST(req: NextRequest) {
     revalidatePath('/admin/books')
 
     return NextResponse.json({ book }, { status: 201 })
-  } catch {
-    return NextResponse.json({ error: 'Failed to create book' }, { status: 500 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return NextResponse.json({ error: `Failed to create book: ${message}` }, { status: 500 })
   }
 }
