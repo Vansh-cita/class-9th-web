@@ -133,7 +133,7 @@ export default function ReferralCodeModal({ open, onClose }: Props) {
           <button
             onClick={handleSubmit}
             disabled={loading || !code.trim()}
-            className="w-full btn-primary !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full btn-primary mandala-btn !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

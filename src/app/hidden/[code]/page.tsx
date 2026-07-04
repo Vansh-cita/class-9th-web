@@ -119,7 +119,7 @@ export default function HiddenPageRoute() {
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white text-center font-mono placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none"
                 placeholder="Enter access code"
               />
-              <button onClick={unlockByCode} className="btn-primary w-full !py-3">
+              <button onClick={unlockByCode} className="btn-primary mandala-btn w-full !py-3">
                 Unlock
               </button>
             </div>

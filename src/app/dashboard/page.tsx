@@ -362,7 +362,7 @@ export default function DashboardPage() {
               <p className="text-gray-400 text-sm max-w-md mx-auto mb-6">
                 Start by exploring books and tracking your reading progress. Everything you need is just a click away.
               </p>
-              <Link href="/books" className="btn-primary">
+              <Link href="/books" className="btn-primary mandala-btn">
                 Browse Books
               </Link>
             </div>

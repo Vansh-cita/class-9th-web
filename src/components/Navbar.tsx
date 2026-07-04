@@ -134,7 +134,7 @@ export default function Navbar() {
                   <Link href={dashboardHref} className="btn-outline text-sm !py-2 !px-5">
                     Dashboard
                   </Link>
-                  <button onClick={handleLogout} className="btn-primary text-sm !py-2 !px-5">
+                  <button onClick={handleLogout} className="btn-primary mandala-btn text-sm !py-2 !px-5">
                     Logout
                   </button>
                 </div>
@@ -143,7 +143,7 @@ export default function Navbar() {
                   <Link href="/login" className="btn-outline text-sm !py-2 !px-5">
                     Login
                   </Link>
-                  <Link href="/register" className="btn-primary text-sm !py-2 !px-5">
+                  <Link href="/register" className="btn-primary mandala-btn text-sm !py-2 !px-5">
                     Register
                   </Link>
                 </div>
@@ -212,7 +212,7 @@ export default function Navbar() {
                   <Link href={dashboardHref} className="btn-outline text-sm !py-2.5 !px-5 text-center" onClick={() => setMenuOpen(false)}>
                     Dashboard
                   </Link>
-                  <button onClick={handleLogout} className="btn-primary text-sm !py-2.5 !px-5 text-center">
+                  <button onClick={handleLogout} className="btn-primary mandala-btn text-sm !py-2.5 !px-5 text-center">
                     Logout
                   </button>
                 </div>
@@ -221,7 +221,7 @@ export default function Navbar() {
                   <Link href="/login" className="btn-outline text-sm !py-2.5 !px-5 flex-1 text-center" onClick={() => setMenuOpen(false)}>
                     Login
                   </Link>
-                  <Link href="/register" className="btn-primary text-sm !py-2.5 !px-5 flex-1 text-center" onClick={() => setMenuOpen(false)}>
+                  <Link href="/register" className="btn-primary mandala-btn text-sm !py-2.5 !px-5 flex-1 text-center" onClick={() => setMenuOpen(false)}>
                     Register
                   </Link>
                 </div>

@@ -228,7 +228,7 @@ export default function FAQPage() {
                     )}
 
                     <button onClick={handleSubmit} disabled={submitting}
-                      className="btn-primary !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                      className="btn-primary mandala-btn !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                       {submitting ? (
                         <span className="flex items-center gap-2">
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

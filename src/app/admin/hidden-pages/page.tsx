@@ -138,7 +138,7 @@ export default function AdminHiddenPages() {
           <h1 className="text-2xl sm:text-3xl font-bold">Hidden Pages</h1>
           <p className="text-gray-400 text-sm mt-1">Create and manage secret access-restricted pages</p>
         </div>
-        <button onClick={() => setShowCreate(!showCreate)} className="btn-primary !py-2.5 !text-sm self-start">
+        <button onClick={() => setShowCreate(!showCreate)} className="btn-primary mandala-btn !py-2.5 !text-sm self-start">
           {showCreate ? 'Cancel' : '+ New Hidden Page'}
         </button>
       </motion.div>
@@ -217,7 +217,7 @@ export default function AdminHiddenPages() {
               </div>
             </div>
 
-            <button type="submit" disabled={submitting} className="btn-primary !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            <button type="submit" disabled={submitting} className="btn-primary mandala-btn !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
               {submitting ? (
                 <span className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -343,7 +343,7 @@ function EditHiddenPageForm({ page, onSave }: { page: HiddenPageData; onSave: ()
           </div>
           <span className="text-xs text-gray-400">Active</span>
         </label>
-        <button type="submit" className="btn-primary !py-1.5 !px-4 !text-xs">Save</button>
+        <button type="submit" className="btn-primary mandala-btn !py-1.5 !px-4 !text-xs">Save</button>
       </div>
     </form>
   )

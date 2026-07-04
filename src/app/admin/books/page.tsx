@@ -281,7 +281,7 @@ export default function AdminBooksPage() {
               placeholder="Description (optional)" />
           </div>
           <div className="flex gap-3 sm:col-span-2 lg:col-span-3">
-            <button type="submit" disabled={submitting} className="btn-primary !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            <button type="submit" disabled={submitting} className="btn-primary mandala-btn !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                 {submitting ? (
                   <span className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -412,7 +412,7 @@ export default function AdminBooksPage() {
                 <p className="text-xs text-red-400 text-center">{chError}</p>
               )}
               <button onClick={uploadChapter} disabled={!chForm.chapter_number || !chForm.title || !chFile}
-                className="w-full btn-primary !py-2 !text-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                className="w-full btn-primary mandala-btn !py-2 !text-xs disabled:opacity-50 disabled:cursor-not-allowed">
                 Upload Chapter
               </button>
             </div>

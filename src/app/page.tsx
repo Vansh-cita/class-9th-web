@@ -111,7 +111,7 @@ export default function Home() {
             <div className="flex items-center justify-center gap-4 flex-wrap">
               {user ? (
                 <>
-                  <Link href={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} className="btn-primary text-lg !px-8 !py-4">
+                  <Link href={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} className="btn-primary mandala-btn text-lg !px-8 !py-4">
                     Go to Dashboard
                   </Link>
                   <button
@@ -128,7 +128,7 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <Link href="/register" className="btn-primary text-lg !px-8 !py-4">
+                  <Link href="/register" className="btn-primary mandala-btn text-lg !px-8 !py-4">
                     Get Started Free
                   </Link>
                   <Link href="/books" className="btn-outline text-lg !px-8 !py-4">

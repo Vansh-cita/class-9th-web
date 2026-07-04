@@ -152,7 +152,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full !py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary mandala-btn w-full !py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Register'}
             </button>

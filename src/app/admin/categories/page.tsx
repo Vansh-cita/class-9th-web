@@ -134,7 +134,7 @@ export default function AdminCategoriesPage() {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#FF0F7B] focus:outline-none" />
           </div>
           <div className="flex gap-2">
-            <button type="submit" disabled={submitting} className="btn-primary !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            <button type="submit" disabled={submitting} className="btn-primary mandala-btn !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                 {submitting ? (
                   <span className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
