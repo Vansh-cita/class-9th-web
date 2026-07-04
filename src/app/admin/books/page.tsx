@@ -45,6 +45,7 @@ export default function AdminBooksPage() {
   const [chForm, setChForm] = useState({ chapter_number: '', title: '' })
   const [chFile, setChFile] = useState<File | null>(null)
   const [chDragOver, setChDragOver] = useState(false)
+  const [chError, setChError] = useState('')
   const chFileRef = useRef<HTMLInputElement>(null)
 
   const fetchAll = useCallback(async () => {
@@ -158,6 +159,7 @@ export default function AdminBooksPage() {
 
   const uploadChapter = async () => {
     if (!chaptersBook || !chForm.chapter_number || !chForm.title || !chFile) return
+    setChError('')
     const fd = new FormData()
     fd.set('book_id', String(chaptersBook.id))
     fd.set('chapter_number', chForm.chapter_number)
@@ -169,12 +171,15 @@ export default function AdminBooksPage() {
       if (d.chapter) {
         setChForm({ chapter_number: '', title: '' })
         setChFile(null)
+        setChError('')
         if (chFileRef.current) chFileRef.current.value = ''
         fetchChapters(chaptersBook.id)
         fetchAll()
+      } else {
+        setChError(d.error || 'Upload failed')
       }
-    } catch {
-      // Silently fail
+    } catch (e) {
+      setChError('Network error — could not reach server')
     }
   }
 
@@ -190,7 +195,7 @@ export default function AdminBooksPage() {
   }
 
   const handleChFileSelect = (file: File | null) => {
-    if (file && file.type === 'application/pdf') setChFile(file)
+    if (file && (file.type === 'application/pdf' || file.name?.toLowerCase().endsWith('.pdf'))) setChFile(file)
   }
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.03 } } }
@@ -403,6 +408,9 @@ export default function AdminBooksPage() {
                 <input ref={chFileRef} type="file" accept=".pdf,application/pdf"
                   onChange={e => handleChFileSelect(e.target.files?.[0] ?? null)} className="hidden" />
               </div>
+              {chError && (
+                <p className="text-xs text-red-400 text-center">{chError}</p>
+              )}
               <button onClick={uploadChapter} disabled={!chForm.chapter_number || !chForm.title || !chFile}
                 className="w-full btn-primary !py-2 !text-xs disabled:opacity-50 disabled:cursor-not-allowed">
                 Upload Chapter

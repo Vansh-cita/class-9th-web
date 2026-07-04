@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { writeFile } from 'fs/promises'
-import { existsSync, mkdirSync } from 'fs'
-import { join } from 'path'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,13 +27,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Book not found' }, { status: 404 })
     }
 
-    const ext = file.name.endsWith('.pdf') ? 'pdf' : 'pdf'
-    const safeName = `ch_${chapter_number}_${book.slug}_${Date.now()}.${ext}`
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'chapters')
-    if (!existsSync(uploadDir)) mkdirSync(uploadDir, { recursive: true })
     const bytes = await file.arrayBuffer()
-    await writeFile(join(uploadDir, safeName), Buffer.from(bytes))
-    const pdfUrl = `/uploads/chapters/${safeName}`
+    const base64 = Buffer.from(bytes).toString('base64')
+    const pdfUrl = `data:application/pdf;base64,${base64}`
 
     const chapter = await prisma.chapters.upsert({
       where: {
@@ -68,8 +61,9 @@ export async function POST(req: NextRequest) {
     revalidatePath('/admin/books')
 
     return NextResponse.json({ chapter }, { status: 201 })
-  } catch {
-    return NextResponse.json({ error: 'Failed to upload chapter' }, { status: 500 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return NextResponse.json({ error: `Failed to upload chapter: ${message}` }, { status: 500 })
   }
 }
 
