@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { writeFile } from 'fs/promises'
+import { existsSync, mkdirSync } from 'fs'
 import { join } from 'path'
 
 export const dynamic = 'force-dynamic'
@@ -57,8 +58,10 @@ export async function POST(req: NextRequest) {
     if (file && file.size > 0) {
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
       const safeName = `cover_${Date.now()}_${Math.round(Math.random() * 1e9)}.${ext}`
+      const uploadDir = join(process.cwd(), 'public', 'uploads', 'covers')
+      if (!existsSync(uploadDir)) mkdirSync(uploadDir, { recursive: true })
       const bytes = await file.arrayBuffer()
-      await writeFile(join('public', 'uploads', 'covers', safeName), Buffer.from(bytes))
+      await writeFile(join(uploadDir, safeName), Buffer.from(bytes))
       thumbnailPath = `/uploads/covers/${safeName}`
     }
 

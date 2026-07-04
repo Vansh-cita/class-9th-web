@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { writeFile } from 'fs/promises'
+import { existsSync, mkdirSync } from 'fs'
 import { join } from 'path'
 
 export const dynamic = 'force-dynamic'
@@ -31,8 +32,10 @@ export async function POST(req: NextRequest) {
 
     const ext = file.name.endsWith('.pdf') ? 'pdf' : 'pdf'
     const safeName = `ch_${chapter_number}_${book.slug}_${Date.now()}.${ext}`
+    const uploadDir = join(process.cwd(), 'public', 'uploads', 'chapters')
+    if (!existsSync(uploadDir)) mkdirSync(uploadDir, { recursive: true })
     const bytes = await file.arrayBuffer()
-    await writeFile(join('public', 'uploads', 'chapters', safeName), Buffer.from(bytes))
+    await writeFile(join(uploadDir, safeName), Buffer.from(bytes))
     const pdfUrl = `/uploads/chapters/${safeName}`
 
     const chapter = await prisma.chapters.upsert({
