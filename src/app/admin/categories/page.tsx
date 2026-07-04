@@ -118,17 +118,17 @@ export default function AdminCategoriesPage() {
       <motion.div variants={item} className="glass-card p-6 mb-8">
         <h3 className="font-semibold mb-5">{editingId ? 'Edit Category' : 'Create Category'}</h3>
         <form onSubmit={handleSubmit} className="flex flex-wrap gap-4 items-end">
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-0 sm:min-w-[200px]">
             <label className="block text-xs text-gray-500 mb-1">Name</label>
             <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value, slug: editingId ? form.slug : e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-') })}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#FF0F7B] focus:outline-none" required />
           </div>
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-0 sm:min-w-[200px]">
             <label className="block text-xs text-gray-500 mb-1">Slug</label>
             <input value={form.slug} onChange={e => setForm({ ...form, slug: e.target.value })}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#FF0F7B] focus:outline-none" required />
           </div>
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-0 sm:min-w-[200px]">
             <label className="block text-xs text-gray-500 mb-1">Description</label>
             <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#FF0F7B] focus:outline-none" />

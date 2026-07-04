@@ -64,10 +64,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${inter.variable}`}>
-      <body className="min-h-screen w-full flex flex-col bg-neutral-950">
+    <html lang="en" className={`${outfit.variable} ${inter.variable} w-full max-w-full overflow-x-hidden relative`}>
+      <body className="min-h-screen w-full max-w-full overflow-x-hidden relative flex flex-col bg-neutral-950">
         <Navbar />
-        <main className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col w-full max-w-full overflow-x-hidden relative">
           {children}
         </main>
         <Footer />

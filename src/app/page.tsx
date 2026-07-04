@@ -83,11 +83,11 @@ export default function Home() {
     : promoDefaults
 
   return (
-    <div className="relative min-h-screen w-full bg-neutral-950">
+    <div className="relative min-h-screen w-full bg-neutral-950 overflow-x-hidden">
       {/* Full-page background gradient and glow — stretches edge to edge */}
       <div className="absolute inset-0 w-full h-full min-h-full bg-gradient-to-b from-[#FF0F7B]/5 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#FF0F7B]/8 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] bg-[#9D4EDD]/8 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[min(600px,100vw)] h-[600px] bg-[#FF0F7B]/8 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-0 w-[min(400px,100vw)] h-[400px] bg-[#9D4EDD]/8 rounded-full blur-[120px] pointer-events-none" />
 
       <section className="relative z-10 min-h-[90vh] flex items-center justify-center pt-24">
 
