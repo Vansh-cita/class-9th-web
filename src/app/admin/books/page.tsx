@@ -366,7 +366,7 @@ export default function AdminBooksPage() {
             <div className="space-y-3">
               <h4 className="text-xs text-gray-500 uppercase tracking-wider">Upload New Chapter</h4>
               <div className="grid grid-cols-2 gap-3">
-                <input type="number" min={1} value={chForm.chapter_number}
+                <input type="number" min={0} value={chForm.chapter_number}
                   onChange={e => setChForm({ ...chForm, chapter_number: e.target.value })}
                   className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-[#FF0F7B] focus:outline-none"
                   placeholder="Chapter #" />
