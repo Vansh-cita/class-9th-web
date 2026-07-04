@@ -59,8 +59,8 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`sticky top-0 z-50 backdrop-blur-md bg-black/70 border-b border-neutral-800 transition-all duration-300 ${
-          scrolled ? 'shadow-lg shadow-black/20' : ''
+        className={`sticky top-0 z-50 bg-[#090514]/80 backdrop-blur-2xl border-b border-white/[0.06] transition-all duration-300 ${
+          scrolled ? 'shadow-2xl shadow-black/30' : ''
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -72,32 +72,32 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-6">
               <Link
                 href="/"
-                className={`text-sm transition-colors ${
-                  pathname === '/' ? 'text-[#FF0F7B]' : 'text-gray-400 hover:text-white'
+                className={`text-sm font-medium transition-colors ${
+                  pathname === '/' ? 'text-pink-500' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 Home
               </Link>
               <Link
                 href="/books"
-                className={`text-sm transition-colors ${
-                  pathname.startsWith('/books') ? 'text-[#FF0F7B]' : 'text-gray-400 hover:text-white'
+                className={`text-sm font-medium transition-colors ${
+                  pathname.startsWith('/books') ? 'text-pink-500' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 Books
               </Link>
               <Link
                 href="/search"
-                className={`text-sm transition-colors ${
-                  pathname === '/search' ? 'text-[#FF0F7B]' : 'text-gray-400 hover:text-white'
+                className={`text-sm font-medium transition-colors ${
+                  pathname === '/search' ? 'text-pink-500' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 Search
               </Link>
               <Link
                 href="/faq"
-                className={`text-sm transition-colors ${
-                  pathname === '/faq' ? 'text-[#FF0F7B]' : 'text-gray-400 hover:text-white'
+                className={`text-sm font-medium transition-colors ${
+                  pathname === '/faq' ? 'text-pink-500' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 FAQ
@@ -106,7 +106,7 @@ export default function Navbar() {
               <div className="flex items-center gap-1.5 ml-4">
                 <button
                   onClick={() => setAnnouncementsOpen(true)}
-                  className="relative p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all active:scale-95"
+                  className="relative p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.06] transition-all active:scale-95"
                   title="Announcements"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -120,7 +120,7 @@ export default function Navbar() {
                 </button>
                 <button
                   onClick={() => setReferralOpen(true)}
-                  className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all active:scale-95"
+                  className="p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.06] transition-all active:scale-95"
                   title="Secret Access"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -166,25 +166,25 @@ export default function Navbar() {
         </div>
 
           {menuOpen && (
-            <div className="md:hidden glass border-t border-white/5">
+            <div className="md:hidden glass border-t border-white/[0.06]">
               <div className="px-4 py-4 space-y-1">
-                <Link href="/" className="block text-gray-400 hover:text-white py-3.5 px-3 rounded-xl hover:bg-white/5 transition-colors" onClick={() => setMenuOpen(false)}>
+                <Link href="/" className="block text-slate-400 hover:text-white py-3.5 px-3 rounded-xl hover:bg-white/[0.06] transition-colors" onClick={() => setMenuOpen(false)}>
                   Home
                 </Link>
-                <Link href="/books" className="block text-gray-400 hover:text-white py-3.5 px-3 rounded-xl hover:bg-white/5 transition-colors" onClick={() => setMenuOpen(false)}>
+                <Link href="/books" className="block text-slate-400 hover:text-white py-3.5 px-3 rounded-xl hover:bg-white/[0.06] transition-colors" onClick={() => setMenuOpen(false)}>
                   Books
                 </Link>
-                <Link href="/search" className="block text-gray-400 hover:text-white py-3.5 px-3 rounded-xl hover:bg-white/5 transition-colors" onClick={() => setMenuOpen(false)}>
+                <Link href="/search" className="block text-slate-400 hover:text-white py-3.5 px-3 rounded-xl hover:bg-white/[0.06] transition-colors" onClick={() => setMenuOpen(false)}>
                   Search
                 </Link>
-                <Link href="/faq" className="block text-gray-400 hover:text-white py-3.5 px-3 rounded-xl hover:bg-white/5 transition-colors" onClick={() => setMenuOpen(false)}>
+                <Link href="/faq" className="block text-slate-400 hover:text-white py-3.5 px-3 rounded-xl hover:bg-white/[0.06] transition-colors" onClick={() => setMenuOpen(false)}>
                   FAQ
                 </Link>
 
-              <div className="flex items-center gap-2 pt-2 pb-1 border-t border-white/5">
+              <div className="flex items-center gap-2 pt-2 pb-1 border-t border-white/[0.06]">
                 <button
                   onClick={() => { setAnnouncementsOpen(true); setMenuOpen(false) }}
-                  className="relative flex items-center gap-2 text-sm text-gray-400 hover:text-white py-3 flex-1 justify-center rounded-xl hover:bg-white/5 transition-colors"
+                  className="relative flex items-center gap-2 text-sm text-slate-400 hover:text-white py-3 flex-1 justify-center rounded-xl hover:bg-white/[0.06] transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
@@ -198,7 +198,7 @@ export default function Navbar() {
                 </button>
                 <button
                   onClick={() => { setReferralOpen(true); setMenuOpen(false) }}
-                  className="flex items-center gap-2 text-sm text-gray-400 hover:text-white py-3 flex-1 justify-center rounded-xl hover:bg-white/5 transition-colors"
+                  className="flex items-center gap-2 text-sm text-slate-400 hover:text-white py-3 flex-1 justify-center rounded-xl hover:bg-white/[0.06] transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l6 6-6 6M12 18h6" />
@@ -208,20 +208,20 @@ export default function Navbar() {
               </div>
 
               {user ? (
-                <div className="flex flex-col gap-2 pt-2 border-t border-white/5">
-                  <Link href={dashboardHref} className="btn-outline text-sm !py-2 !px-5 text-center" onClick={() => setMenuOpen(false)}>
+                <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
+                  <Link href={dashboardHref} className="btn-outline text-sm !py-2.5 !px-5 text-center" onClick={() => setMenuOpen(false)}>
                     Dashboard
                   </Link>
-                  <button onClick={handleLogout} className="btn-primary text-sm !py-2 !px-5 text-center">
+                  <button onClick={handleLogout} className="btn-primary text-sm !py-2.5 !px-5 text-center">
                     Logout
                   </button>
                 </div>
               ) : (
-                <div className="flex gap-3 pt-2 border-t border-white/5">
-                  <Link href="/login" className="btn-outline text-sm !py-2 !px-5 flex-1 text-center" onClick={() => setMenuOpen(false)}>
+                <div className="flex gap-3 pt-2 border-t border-white/[0.06]">
+                  <Link href="/login" className="btn-outline text-sm !py-2.5 !px-5 flex-1 text-center" onClick={() => setMenuOpen(false)}>
                     Login
                   </Link>
-                  <Link href="/register" className="btn-primary text-sm !py-2 !px-5 flex-1 text-center" onClick={() => setMenuOpen(false)}>
+                  <Link href="/register" className="btn-primary text-sm !py-2.5 !px-5 flex-1 text-center" onClick={() => setMenuOpen(false)}>
                     Register
                   </Link>
                 </div>

@@ -12,6 +12,7 @@ const config: Config = {
         bg: {
           primary: "#050505",
           secondary: "#0a0a0a",
+          soft: "rgba(255,255,255,0.03)",
         },
         accent: {
           DEFAULT: "#FF0F7B",
@@ -19,19 +20,19 @@ const config: Config = {
           glow: "rgba(255,15,123,0.30)",
         },
         text: {
-          primary: "#f0f0f0",
-          secondary: "#a0a0a0",
-          muted: "#606060",
+          primary: "#f1f5f9",
+          secondary: "#94a3b8",
+          muted: "#64748b",
           inverse: "#050505",
         },
         border: {
-          DEFAULT: "rgba(255,255,255,0.06)",
+          DEFAULT: "rgba(255,255,255,0.08)",
           accent: "rgba(255,15,123,0.30)",
         },
       },
       fontFamily: {
-        display: ["var(--font-outfit)", "Outfit", "sans-serif"],
-        body: ["var(--font-inter)", "Inter", "sans-serif"],
+        display: ["var(--font-plus-jakarta)", "Plus Jakarta Sans", "sans-serif"],
+        body: ["var(--font-plus-jakarta)", "Plus Jakarta Sans", "sans-serif"],
       },
       borderRadius: {
         sm: "8px",

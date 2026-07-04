@@ -13,8 +13,8 @@ export default function Footer() {
   }, [])
 
   return (
-    <footer className="w-full py-8 px-4">
-      <div className="max-w-xl mx-auto text-center text-neutral-500 text-xs tracking-wide leading-relaxed space-y-1">
+    <footer className="w-full py-10 px-4 border-t border-white/[0.04]">
+      <div className="max-w-xl mx-auto text-center text-slate-500 text-xs tracking-wide leading-relaxed space-y-1">
         {text ? (
           text.split('\n').map((line, i) => <p key={i}>{line}</p>)
         ) : (

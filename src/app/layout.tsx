@@ -1,18 +1,12 @@
 import type { Metadata } from 'next'
-import { Outfit, Inter } from 'next/font/google'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
-const outfit = Outfit({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  variable: '--font-outfit',
-  display: 'swap',
-})
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-plus-jakarta',
   display: 'swap',
 })
 
@@ -64,8 +58,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${inter.variable} w-full max-w-full overflow-x-hidden relative`}>
-      <body className="min-h-screen w-full max-w-full overflow-x-hidden relative flex flex-col bg-neutral-950">
+    <html lang="en" className={`${plusJakartaSans.variable} w-full max-w-full overflow-x-hidden relative`}>
+      <body className="min-h-screen w-full max-w-full overflow-x-hidden relative flex flex-col">
         <Navbar />
         <main className="flex-1 flex flex-col w-full max-w-full overflow-x-hidden relative">
           {children}

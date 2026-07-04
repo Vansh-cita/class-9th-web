@@ -10,10 +10,10 @@
   --bg-secondary: #0A0A0A;
   --bg-card: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-bg: rgba(5, 5, 5, 0.8);
-  --text-primary: #FFFFFF;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-muted: rgba(255, 255, 255, 0.4);
+  --glass-bg: rgba(9, 5, 20, 0.85);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
   --radius: 24px;
 }
 
@@ -27,31 +27,31 @@
 *::-webkit-scrollbar-thumb { background: rgba(255, 15, 123, 0.3); border-radius: 3px; }
 
 body {
-  background: var(--bg-primary);
+  background: radial-gradient(circle at top center, #1a0b2e 0%, #090514 100%);
   color: var(--text-primary);
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   overflow-x: hidden;
 }
 
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .glass-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius);
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 15, 123, 0.2);
-  box-shadow: 0 8px 32px rgba(255, 15, 123, 0.08);
+  border-color: rgba(255, 15, 123, 0.25);
+  box-shadow: 0 12px 48px rgba(255, 15, 123, 0.08), 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .neon-glow {
@@ -72,33 +72,38 @@ body {
 .btn-primary {
   background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
   border: none;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 12px 32px;
   color: white;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.35s ease;
+  box-shadow: 0 4px 24px rgba(255, 15, 123, 0.15);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(255, 15, 123, 0.3);
+  box-shadow: 0 12px 40px rgba(255, 15, 123, 0.3);
+  opacity: 0.95;
 }
 
 .btn-outline {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 12px 32px;
   color: var(--text-primary);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.35s ease;
+  backdrop-filter: blur(8px);
 }
 
 .btn-outline:hover {
   border-color: var(--neon-pink);
   color: var(--neon-pink);
+  background: rgba(255, 15, 123, 0.05);
+  box-shadow: 0 4px 24px rgba(255, 15, 123, 0.1);
 }
 
 @keyframes hover-shimmer {
