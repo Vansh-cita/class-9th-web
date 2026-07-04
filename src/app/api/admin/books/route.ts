@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { writeFile } from 'fs/promises'
-import { existsSync, mkdirSync } from 'fs'
-import { join } from 'path'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,12 +54,10 @@ export async function POST(req: NextRequest) {
     let thumbnailPath = 'default-book.png'
     if (file && file.size > 0) {
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
-      const safeName = `cover_${Date.now()}_${Math.round(Math.random() * 1e9)}.${ext}`
-      const uploadDir = join(process.cwd(), 'public', 'uploads', 'covers')
-      if (!existsSync(uploadDir)) mkdirSync(uploadDir, { recursive: true })
+      const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : ext === 'gif' ? 'image/gif' : 'image/png'
       const bytes = await file.arrayBuffer()
-      await writeFile(join(uploadDir, safeName), Buffer.from(bytes))
-      thumbnailPath = `/uploads/covers/${safeName}`
+      const base64 = Buffer.from(bytes).toString('base64')
+      thumbnailPath = `data:${mime};base64,${base64}`
     }
 
     const book = await prisma.books.create({
