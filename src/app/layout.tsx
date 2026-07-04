@@ -19,6 +19,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'CBSE Class 9 Learning Portal',
   description: 'Interactive learning platform for CBSE Class 9 students',
+  icons: {
+    icon: '/icon.png?v=1',
+  },
 }
 
 export default function RootLayout({
