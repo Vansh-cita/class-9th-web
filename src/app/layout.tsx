@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: 'CBSE Class 9 Learning Portal',
   description: 'Interactive learning platform for CBSE Class 9 students',
   icons: {
-    icon: '/icon.png?v=2',
+    icon: '/icon.png?v=3',
   },
 }
 
