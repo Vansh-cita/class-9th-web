@@ -19,8 +19,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'CBSE Class 9 Learning Portal',
   description: 'Interactive learning platform for CBSE Class 9 students',
+  metadataBase: new URL('https://9th.tvnxh.xyz'),
   icons: {
-    icon: '/icon.png?v=3',
+    icon: '/icon.png?v=4',
   },
 }
 
