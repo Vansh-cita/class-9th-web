@@ -147,6 +147,11 @@ html, body {
   max-width: 100% !important;
   overflow-x: hidden !important;
   width: 100% !important;
+  background-color: transparent !important;
+}
+
+html:not(:has(.has-custom-bg)) {
+  background: #090514;
 }
 
 #__next, [data-nextjs-root] {

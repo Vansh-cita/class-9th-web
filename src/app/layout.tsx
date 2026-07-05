@@ -86,7 +86,6 @@ export default async function RootLayout({
           bgOpacity={Math.min(1, Math.max(0, parseFloat(bg.bgOpacity || '0.85')))}
           pageSpecificBgs={bg.pageSpecificBgs || '{}'}
         />
-        <div className="fixed inset-0 -z-40 bg-[#090514] transition-all duration-300 pointer-events-none" />
         <Navbar />
         <main className="flex-1 flex flex-col w-full max-w-full overflow-x-hidden relative">
           {children}
