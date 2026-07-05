@@ -36,10 +36,11 @@ export default function BackgroundOverlay({
 
   return (
     <div
-      className="has-custom-bg fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
+      className="has-custom-bg fixed inset-0 z-[-99] w-screen h-screen bg-cover bg-center bg-no-repeat pointer-events-none transition-all duration-300"
       style={{
         backgroundImage: `url(${activeBgUrl})`,
         opacity: bgOpacity,
+        imageRendering: 'auto',
       }}
     />
   )

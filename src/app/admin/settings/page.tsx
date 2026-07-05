@@ -54,23 +54,30 @@ const ROUTE_OPTIONS = [
   { value: '/admin', label: '/admin' },
 ]
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
+async function uploadFile(file: File): Promise<string> {
+  const body = new FormData()
+  body.set('file', file)
+  const res = await fetch('/api/admin/upload-background', { method: 'POST', body })
+  const d = await res.json()
+  if (!res.ok) throw new Error(d.error || 'Upload failed')
+  return d.url
 }
 
 function UploadZone({ onFile, label }: { onFile: (dataUrl: string) => void; label?: string }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const handleFile = async (f: File) => {
     if (!f.type.startsWith('image/')) return
-    const dataUrl = await fileToBase64(f)
-    onFile(dataUrl)
+    setUploading(true)
+    try {
+      const url = await uploadFile(f)
+      onFile(url)
+    } catch {
+      // Silently fail — caller can show error
+    }
+    setUploading(false)
   }
 
   return (
@@ -78,17 +85,25 @@ function UploadZone({ onFile, label }: { onFile: (dataUrl: string) => void; labe
       onDragOver={e => { e.preventDefault(); setDragging(true) }}
       onDragLeave={() => setDragging(false)}
       onDrop={e => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f) }}
-      onClick={() => inputRef.current?.click()}
+      onClick={() => { if (!uploading) inputRef.current?.click() }}
       className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer bg-white/[0.02] transition-all ${
-        dragging ? 'border-pink-500/70 bg-pink-500/5' : 'border-white/20 hover:border-pink-500/50'
+        dragging ? 'border-pink-500/70 bg-pink-500/5' : uploading ? 'border-pink-500/30 opacity-60' : 'border-white/20 hover:border-pink-500/50'
       }`}
     >
       <input ref={inputRef} type="file" accept="image/*" className="hidden"
+        disabled={uploading}
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
-      <p className="text-sm text-slate-400">
-        {label || 'Drag & drop an image here, or'}{' '}
-        <span className="text-pink-500 font-medium">browse</span>
-      </p>
+      {uploading ? (
+        <span className="text-sm text-slate-400 flex items-center justify-center gap-2">
+          <div className="w-4 h-4 border-2 border-pink-500 border-t-transparent rounded-full animate-spin" />
+          Uploading...
+        </span>
+      ) : (
+        <p className="text-sm text-slate-400">
+          {label || 'Drag & drop an image here, or'}{' '}
+          <span className="text-pink-500 font-medium">browse</span>
+        </p>
+      )}
     </div>
   )
 }
@@ -188,15 +203,16 @@ export default function AdminSettingsPage() {
   const handleBgReset = async () => {
     setBgSaving(true)
     setBgMsg('')
+    const empty = { globalBgUrl: '', defaultBgUrl: '', bgOpacity: '1', pageSpecificBgs: '{}' }
     try {
-      const res = await fetch('/api/admin/settings/background', {
-        method: 'POST',
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'reset' }),
+        body: JSON.stringify(empty),
       })
       const d = await res.json()
       if (d.success) {
-        setBgSettings(defaultBg)
+        setBgSettings({ ...defaultBg, ...empty })
         setPageRows([])
         setBgMsg('Background reset to factory defaults')
       } else {
