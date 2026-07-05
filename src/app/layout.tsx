@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { prisma } from '@/lib/prisma'
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -52,14 +53,44 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+async function getBgSettings() {
+  try {
+    const keys = ['globalBgUrl', 'defaultBgUrl', 'bgOpacity', 'pageSpecificBgs']
+    const rows = await prisma.settings.findMany({
+      where: { setting_key: { in: keys } },
+    })
+    const map: Record<string, string> = {}
+    for (const r of rows) {
+      map[r.setting_key] = r.setting_value ?? ''
+    }
+    return map
+  } catch {
+    return {}
+  }
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const bg = await getBgSettings()
+  const bgUrl = bg.globalBgUrl || bg.defaultBgUrl || ''
+  const bgOpacity = Math.min(1, Math.max(0, parseFloat(bg.bgOpacity || '0.85')))
+
   return (
     <html lang="en" className={`${plusJakartaSans.variable} w-full max-w-full overflow-x-hidden relative`}>
       <body className="min-h-screen w-full max-w-full overflow-x-hidden relative flex flex-col">
+        {bgUrl && (
+          <div
+            className="fixed inset-0 -z-50 bg-cover bg-center bg-no-repeat transition-all duration-300"
+            style={{
+              backgroundImage: `url(${bgUrl})`,
+              opacity: bgOpacity,
+            }}
+          />
+        )}
+        <div className="fixed inset-0 -z-40 bg-[#090514] transition-all duration-300" />
         <Navbar />
         <main className="flex-1 flex flex-col w-full max-w-full overflow-x-hidden relative">
           {children}
