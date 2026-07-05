@@ -359,23 +359,38 @@ export default function AdminSettingsPage() {
           {/* Global Background Upload */}
           <div>
             <label className="block text-sm font-medium mb-1.5">Global Background Image</label>
-            <p className="text-xs text-gray-500 mb-2">Upload an image or paste a URL for the site-wide background</p>
+            <p className="text-xs text-gray-500 mb-2">Upload an image file directly, or paste a URL below</p>
             <UploadZone onFile={dataUrl => setBgSettings(p => ({ ...p, globalBgUrl: dataUrl }))}
               label="Drop a background image here, or" />
-            <div className="mt-2">
-              <input value={bgSettings.globalBgUrl} onChange={e => setBgSettings(p => ({ ...p, globalBgUrl: e.target.value }))}
-                placeholder="Or paste an image URL directly..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none" />
-            </div>
+            {bgSettings.globalBgUrl && (
+              <div className="mt-2 flex items-center gap-2 bg-white/[0.03] rounded-xl px-3 py-2 border border-white/5">
+                <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/5">
+                  <img src={bgSettings.globalBgUrl} alt="" className="w-full h-full object-cover"
+                    onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                </div>
+                <input value={bgSettings.globalBgUrl} onChange={e => setBgSettings(p => ({ ...p, globalBgUrl: e.target.value }))}
+                  className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder-gray-500 focus:outline-none truncate" />
+                <button onClick={() => setBgSettings(p => ({ ...p, globalBgUrl: '' }))}
+                  className="text-gray-500 hover:text-red-400 shrink-0 p-0.5" title="Remove image">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Fallback URL */}
           <div>
-            <label className="block text-sm font-medium mb-1.5">Fallback Image URL</label>
+            <label className="block text-sm font-medium mb-1.5">Fallback Image</label>
             <p className="text-xs text-gray-500 mb-2">Optional fallback if the primary image fails to load</p>
-            <input value={bgSettings.defaultBgUrl} onChange={e => setBgSettings(p => ({ ...p, defaultBgUrl: e.target.value }))}
-              placeholder="https://example.com/fallback.jpg"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none" />
+            <UploadZone onFile={dataUrl => setBgSettings(p => ({ ...p, defaultBgUrl: dataUrl }))}
+              label="Drop a fallback image here, or" />
+            <div className="mt-2">
+              <input value={bgSettings.defaultBgUrl} onChange={e => setBgSettings(p => ({ ...p, defaultBgUrl: e.target.value }))}
+                placeholder="Or paste a fallback URL directly..."
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none" />
+            </div>
           </div>
 
           {/* Page-Specific Backgrounds */}
@@ -397,37 +412,41 @@ export default function AdminSettingsPage() {
 
             <div className="space-y-3">
               {pageRows.map((row, i) => (
-                <div key={i} className="flex flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                  <div className="sm:w-48 shrink-0">
-                    <ThemeDropdown
-                      options={ROUTE_OPTIONS.filter(o => o.value === 'Global Site Background' ? false : true)}
-                      value={row.route}
-                      onChange={v => updatePageRow(i, 'route', v)}
-                    />
+                <div key={i} className="flex flex-col gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-full sm:w-48 shrink-0">
+                      <ThemeDropdown
+                        options={ROUTE_OPTIONS.filter(o => o.value === 'Global Site Background' ? false : true)}
+                        value={row.route}
+                        onChange={v => updatePageRow(i, 'route', v)}
+                      />
+                    </div>
+                    <button onClick={() => removePageRow(i)}
+                      className="text-gray-500 hover:text-red-400 transition-colors shrink-0 p-1 ml-auto"
+                      title="Remove this route">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    {row.url ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/5">
-                          <img src={row.url} alt="" className="w-full h-full object-cover"
-                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                        </div>
-                        <input value={row.url} onChange={e => updatePageRow(i, 'url', e.target.value)}
-                          placeholder="Image URL or upload below"
-                          className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none" />
+                  <UploadZone onFile={dataUrl => updatePageRow(i, 'url', dataUrl)}
+                    label="Drop image for this route, or" />
+                  {row.url && (
+                    <div className="flex items-center gap-2 bg-white/[0.03] rounded-xl px-3 py-2 border border-white/5">
+                      <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/5">
+                        <img src={row.url} alt="" className="w-full h-full object-cover"
+                          onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                       </div>
-                    ) : (
-                      <UploadZone onFile={dataUrl => updatePageRow(i, 'url', dataUrl)}
-                        label="Drop image here, or" />
-                    )}
-                  </div>
-                  <button onClick={() => removePageRow(i)}
-                    className="text-gray-500 hover:text-red-400 transition-colors shrink-0 p-1 mt-1 sm:mt-0"
-                    title="Remove this route">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                      <input value={row.url} onChange={e => updatePageRow(i, 'url', e.target.value)}
+                        className="flex-1 min-w-0 bg-transparent text-xs text-white placeholder-gray-500 focus:outline-none truncate" />
+                      <button onClick={() => updatePageRow(i, 'url', '')}
+                        className="text-gray-500 hover:text-red-400 shrink-0 p-0.5" title="Clear image">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -442,7 +461,11 @@ export default function AdminSettingsPage() {
             <div className="flex items-center gap-3">
               <span className="text-[10px] text-gray-500 w-6 text-right">0%</span>
               <input type="range" min="0" max="100" value={Math.round(parseFloat(bgSettings.bgOpacity || '0.85') * 100)}
-                onChange={e => setBgSettings(p => ({ ...p, bgOpacity: String(Number(e.target.value) / 100) }))}
+                onChange={e => {
+                  const raw = Number(e.target.value)
+                  const fraction = parseFloat((raw / 100).toFixed(2))
+                  setBgSettings(p => ({ ...p, bgOpacity: String(fraction) }))
+                }}
                 className="flex-1 h-2 rounded-full appearance-none cursor-pointer bg-white/10 accent-[#FF0F7B] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#FF0F7B] [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-[#FF0F7B]/40 [&::-webkit-slider-thumb]:cursor-pointer" />
               <span className="text-[10px] text-gray-500 w-6">100%</span>
             </div>
