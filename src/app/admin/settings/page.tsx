@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import ThemeDropdown from '@/components/ThemeDropdown'
 
 interface Settings {
   [key: string]: string | null
@@ -26,6 +27,11 @@ const settingMeta: Record<string, { label: string; type: string; description: st
   default_author: { label: 'Default Author', type: 'text', description: 'Default author name used when creating new books' },
 }
 
+interface PageBgRow {
+  route: string
+  url: string
+}
+
 interface BgSettings {
   globalBgUrl: string
   pageSpecificBgs: string
@@ -40,6 +46,53 @@ const defaultBg: BgSettings = {
   bgOpacity: '0.85',
 }
 
+const ROUTE_OPTIONS = [
+  { value: 'Global Site Background', label: 'Global Site Background' },
+  { value: '/books', label: '/books' },
+  { value: '/search', label: '/search' },
+  { value: '/login', label: '/login' },
+  { value: '/admin', label: '/admin' },
+]
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+function UploadZone({ onFile, label }: { onFile: (dataUrl: string) => void; label?: string }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [dragging, setDragging] = useState(false)
+
+  const handleFile = async (f: File) => {
+    if (!f.type.startsWith('image/')) return
+    const dataUrl = await fileToBase64(f)
+    onFile(dataUrl)
+  }
+
+  return (
+    <div
+      onDragOver={e => { e.preventDefault(); setDragging(true) }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={e => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f) }}
+      onClick={() => inputRef.current?.click()}
+      className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer bg-white/[0.02] transition-all ${
+        dragging ? 'border-pink-500/70 bg-pink-500/5' : 'border-white/20 hover:border-pink-500/50'
+      }`}
+    >
+      <input ref={inputRef} type="file" accept="image/*" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
+      <p className="text-sm text-slate-400">
+        {label || 'Drag & drop an image here, or'}{' '}
+        <span className="text-pink-500 font-medium">browse</span>
+      </p>
+    </div>
+  )
+}
+
 export default function AdminSettingsPage() {
   const router = useRouter()
   const [settings, setSettings] = useState<Settings>({})
@@ -50,6 +103,8 @@ export default function AdminSettingsPage() {
   const [bgSettings, setBgSettings] = useState<BgSettings>(defaultBg)
   const [bgSaving, setBgSaving] = useState(false)
   const [bgMsg, setBgMsg] = useState('')
+
+  const [pageRows, setPageRows] = useState<PageBgRow[]>([])
 
   const fetchSettings = useCallback(async () => {
     const res = await fetch('/api/admin/settings')
@@ -65,7 +120,15 @@ export default function AdminSettingsPage() {
       const res = await fetch('/api/admin/settings/background')
       const d = await res.json()
       if (d.background) {
-        setBgSettings({ ...defaultBg, ...d.background })
+        const bg = d.background
+        setBgSettings({ ...defaultBg, ...bg })
+        try {
+          const parsed = JSON.parse(bg.pageSpecificBgs || '{}')
+          const rows: PageBgRow[] = Object.entries(parsed).map(([route, url]) => ({ route, url: url as string }))
+          setPageRows(rows)
+        } catch {
+          setPageRows([])
+        }
       }
     } catch {
       // Silently fail
@@ -96,6 +159,14 @@ export default function AdminSettingsPage() {
     setSaving(false)
   }
 
+  const buildBgPayload = () => {
+    const pageObj: Record<string, string> = {}
+    for (const row of pageRows) {
+      if (row.route && row.url) pageObj[row.route] = row.url
+    }
+    return { ...bgSettings, pageSpecificBgs: JSON.stringify(pageObj) }
+  }
+
   const handleBgSave = async () => {
     setBgSaving(true)
     setBgMsg('')
@@ -103,7 +174,7 @@ export default function AdminSettingsPage() {
       const res = await fetch('/api/admin/settings/background', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bgSettings),
+        body: JSON.stringify(buildBgPayload()),
       })
       const d = await res.json()
       setBgMsg(d.success ? 'Background settings saved!' : d.error || 'Error saving background')
@@ -126,6 +197,7 @@ export default function AdminSettingsPage() {
       const d = await res.json()
       if (d.success) {
         setBgSettings(defaultBg)
+        setPageRows([])
         setBgMsg('Background reset to factory defaults')
       } else {
         setBgMsg(d.error || 'Error resetting background')
@@ -135,6 +207,24 @@ export default function AdminSettingsPage() {
       setBgMsg('Network error')
     }
     setBgSaving(false)
+  }
+
+  const addPageRow = () => {
+    const used = new Set(pageRows.map(r => r.route))
+    const next = ROUTE_OPTIONS.find(o => o.value !== 'Global Site Background' && !used.has(o.value))
+    setPageRows(prev => [...prev, { route: next?.value || '/books', url: '' }])
+  }
+
+  const updatePageRow = (index: number, field: keyof PageBgRow, value: string) => {
+    setPageRows(prev => {
+      const next = [...prev]
+      next[index] = { ...next[index], [field]: value }
+      return next
+    })
+  }
+
+  const removePageRow = (index: number) => {
+    setPageRows(prev => prev.filter((_, i) => i !== index))
   }
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.03 } } }
@@ -266,13 +356,17 @@ export default function AdminSettingsPage() {
         </div>
 
         <div className="space-y-6">
-          {/* Background URL */}
+          {/* Global Background Upload */}
           <div>
-            <label className="block text-sm font-medium mb-1.5">Background Image URL</label>
-            <p className="text-xs text-gray-500 mb-2">Paste a direct link to an image (JPEG, PNG, or WebP)</p>
-            <input value={bgSettings.globalBgUrl} onChange={e => setBgSettings(p => ({ ...p, globalBgUrl: e.target.value }))}
-              placeholder="https://example.com/background.jpg"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none" />
+            <label className="block text-sm font-medium mb-1.5">Global Background Image</label>
+            <p className="text-xs text-gray-500 mb-2">Upload an image or paste a URL for the site-wide background</p>
+            <UploadZone onFile={dataUrl => setBgSettings(p => ({ ...p, globalBgUrl: dataUrl }))}
+              label="Drop a background image here, or" />
+            <div className="mt-2">
+              <input value={bgSettings.globalBgUrl} onChange={e => setBgSettings(p => ({ ...p, globalBgUrl: e.target.value }))}
+                placeholder="Or paste an image URL directly..."
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none" />
+            </div>
           </div>
 
           {/* Fallback URL */}
@@ -284,13 +378,59 @@ export default function AdminSettingsPage() {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none" />
           </div>
 
-          {/* Page-specific JSON */}
+          {/* Page-Specific Backgrounds */}
           <div>
-            <label className="block text-sm font-medium mb-1.5">Page-Specific Backgrounds (JSON)</label>
-            <p className="text-xs text-gray-500 mb-2">Map route paths to background image URLs, e.g. {`{"/books": "https://..."}`}</p>
-            <textarea value={bgSettings.pageSpecificBgs} onChange={e => setBgSettings(p => ({ ...p, pageSpecificBgs: e.target.value }))}
-              rows={2}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none resize-none font-mono text-[11px]" />
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-sm font-medium">Page-Specific Backgrounds</label>
+              <button onClick={addPageRow}
+                className="text-xs text-pink-500 hover:text-pink-400 font-medium transition-colors">
+                + Add Route
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mb-3">Assign unique backgrounds to specific routes</p>
+
+            {pageRows.length === 0 && (
+              <div className="text-center py-4 text-sm text-gray-600 bg-white/[0.02] rounded-xl border border-dashed border-white/10">
+                No page-specific backgrounds configured. Click &quot;+ Add Route&quot; to create one.
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {pageRows.map((row, i) => (
+                <div key={i} className="flex flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                  <div className="sm:w-48 shrink-0">
+                    <ThemeDropdown
+                      options={ROUTE_OPTIONS.filter(o => o.value === 'Global Site Background' ? false : true)}
+                      value={row.route}
+                      onChange={v => updatePageRow(i, 'route', v)}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {row.url ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/5">
+                          <img src={row.url} alt="" className="w-full h-full object-cover"
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                        </div>
+                        <input value={row.url} onChange={e => updatePageRow(i, 'url', e.target.value)}
+                          placeholder="Image URL or upload below"
+                          className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none" />
+                      </div>
+                    ) : (
+                      <UploadZone onFile={dataUrl => updatePageRow(i, 'url', dataUrl)}
+                        label="Drop image here, or" />
+                    )}
+                  </div>
+                  <button onClick={() => removePageRow(i)}
+                    className="text-gray-500 hover:text-red-400 transition-colors shrink-0 p-1 mt-1 sm:mt-0"
+                    title="Remove this route">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Opacity slider */}

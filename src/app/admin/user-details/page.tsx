@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import ThemeDropdown from '@/components/ThemeDropdown'
 
 interface UserEntry {
@@ -31,7 +31,12 @@ export default function AdminUserDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
-  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set())
+
+  const [resetUserId, setResetUserId] = useState<number | null>(null)
+  const [resetUsername, setResetUsername] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [resetting, setResetting] = useState(false)
+  const [resetMsg, setResetMsg] = useState('')
 
   const fetchAll = useCallback(async () => {
     try {
@@ -46,12 +51,45 @@ export default function AdminUserDetailsPage() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  const togglePassword = (id: number) => {
-    setVisiblePasswords(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id); else next.add(id)
-      return next
-    })
+  const openResetModal = (u: UserEntry) => {
+    setResetUserId(u.id)
+    setResetUsername(u.username)
+    setNewPassword('')
+    setResetMsg('')
+  }
+
+  const closeResetModal = () => {
+    setResetUserId(null)
+    setResetUsername('')
+    setNewPassword('')
+    setResetMsg('')
+    setResetting(false)
+  }
+
+  const handleResetPassword = async () => {
+    if (!resetUserId || newPassword.length < 4) {
+      setResetMsg('Password must be at least 4 characters')
+      return
+    }
+    setResetting(true)
+    setResetMsg('')
+    try {
+      const res = await fetch('/api/admin/users/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: resetUserId, newPassword }),
+      })
+      const d = await res.json()
+      if (d.success) {
+        setResetMsg('Password updated successfully!')
+        setTimeout(closeResetModal, 1200)
+      } else {
+        setResetMsg(d.error || 'Error resetting password')
+      }
+    } catch {
+      setResetMsg('Network error')
+    }
+    setResetting(false)
   }
 
   const filtered = users.filter(u => {
@@ -153,20 +191,14 @@ export default function AdminUserDetailsPage() {
                   <td className="p-4 text-gray-400 text-xs">{u.user_id || <span className="text-gray-600 italic">none</span>}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-2 min-w-0">
-                      <code className="text-[10px] font-mono bg-white/5 px-2 py-1 rounded select-all truncate max-w-[260px]">
-                        {visiblePasswords.has(u.id) ? u.password : (
-                          <span className="text-yellow-400/70 italic">credentials encrypted</span>
-                        )}
+                      <code className="text-[10px] font-mono bg-white/5 px-2 py-1 rounded truncate max-w-[200px]">
+                        <span className="text-yellow-400/70 italic">credentials encrypted</span>
                       </code>
-                      <button onClick={() => togglePassword(u.id)}
-                        className="text-gray-500 hover:text-white shrink-0 transition-colors"
-                        title={visiblePasswords.has(u.id) ? 'Hide password hash' : 'Reveal password hash'}>
+                      <button onClick={() => openResetModal(u)}
+                        className="text-gray-500 hover:text-pink-400 shrink-0 transition-colors"
+                        title="Reset password for this user">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                          {visiblePasswords.has(u.id) ? (
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                          ) : (
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                          )}
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
                         </svg>
                       </button>
                     </div>
@@ -197,10 +229,82 @@ export default function AdminUserDetailsPage() {
         </div>
       </motion.div>
 
-      {/* Detail modal trigger info */}
+      {/* Footnote */}
       <motion.div variants={item} className="mt-4 text-[10px] text-gray-600 text-center">
-        Click the eye icon to reveal the bcrypt hash for a user. Hashes are hidden by default and never exposed in plain text.
+        Click the key icon to reset a user&apos;s password. Passwords are bcrypt-hashed and cannot be decrypted.
       </motion.div>
+
+      {/* Password Reset Modal */}
+      <AnimatePresence>
+        {resetUserId !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={closeResetModal}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onClick={e => e.stopPropagation()}
+              className="glass-card !rounded-2xl p-6 w-full max-w-md"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-lg">Reset Password</h3>
+                <button onClick={closeResetModal} className="text-gray-500 hover:text-white p-1">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-400 mb-1">
+                Enter a fresh password for <span className="text-white font-medium">{resetUsername}</span>
+              </p>
+              <p className="text-[11px] text-gray-500 mb-4">
+                This will be bcrypt-hashed and stored securely — the original password cannot be recovered.
+              </p>
+
+              <input
+                type="text"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder="New password (min 4 characters)"
+                autoFocus
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-[#FF0F7B] focus:outline-none mb-3"
+                onKeyDown={e => { if (e.key === 'Enter' && !resetting) handleResetPassword() }}
+              />
+
+              {resetMsg && (
+                <div className={`text-sm mb-3 px-3 py-2 rounded-lg ${
+                  resetMsg.includes('success') ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                }`}>
+                  {resetMsg}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <button onClick={closeResetModal}
+                  className="flex-1 btn-outline !py-2.5 !text-sm">
+                  Cancel
+                </button>
+                <button onClick={handleResetPassword} disabled={resetting || newPassword.length < 4}
+                  className="flex-1 btn-primary mandala-btn !py-2.5 !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                  {resetting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Resetting...
+                    </span>
+                  ) : 'Set Password'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
